@@ -60,163 +60,39 @@ The application uses the following environment variables:
 
 The main entry point of the application. It sets up the Express app, middlewares, routes, and database connection.
 
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\app.js
-// ...existing code...
-```
-
 ### `package.json`
 
 Contains the project metadata and dependencies.
 
-```json
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\package.json
-// ...existing code...
-```
+### Key Files
 
-### `src/models/User.js`
+- **Models**:
+  - `src/models/User.js` - User model and schema with password hashing and JWT generation
+  - `src/models/Medication.js` - Medication model and schema
+  - `src/models/MedicationLog.js` - MedicationLog model and schema
 
-Defines the User model and schema, including methods for password hashing and JWT token generation.
+- **Controllers**:
+  - `src/controllers/authController.js` - Authentication operations
+  - `src/controllers/userController.js` - User management operations
+  - `src/controllers/medicationController.js` - Medication and log management
 
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\models\User.js
-// ...existing code...
-```
+- **Routes**:
+  - `src/routes/authRoutes.js` - Authentication endpoints
+  - `src/routes/userRoutes.js` - User management endpoints
+  - `src/routes/medicationRoutes.js` - Medication management endpoints
+  - `src/routes/index.js` - Combines all routes
 
-### `src/models/Medication.js`
+- **Middlewares**:
+  - `src/middlewares/authMiddleware.js` - Authentication and authorization
+  - `src/middlewares/errorHandler.js` - Error handling and logging
 
-Defines the Medication model and schema.
+- **Validations**:
+  - `src/validations/authValidation.js` - Authentication data validation
+  - `src/validations/medicationValidation.js` - Medication data validation
 
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\models\Medication.js
-// ...existing code...
-```
-
-### `src/models/MedicationLog.js`
-
-Defines the MedicationLog model and schema.
-
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\models\MedicationLog.js
-// ...existing code...
-```
-
-### `src/controllers/authController.js`
-
-Handles user authentication-related operations such as register, login, logout, and profile retrieval.
-
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\controllers\authController.js
-// ...existing code...
-```
-
-### `src/controllers/userController.js`
-
-Handles user management operations such as retrieving users, updating roles, and toggling user status.
-
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\controllers\userController.js
-// ...existing code...
-```
-
-### `src/controllers/medicationController.js`
-
-Handles medication management operations such as creating, retrieving, updating, and deleting medications, as well as logging medication intake.
-
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\controllers\medicationController.js
-// ...existing code...
-```
-
-### `src/routes/authRoutes.js`
-
-Defines the routes for authentication-related endpoints.
-
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\routes\authRoutes.js
-// ...existing code...
-```
-
-### `src/routes/userRoutes.js`
-
-Defines the routes for user management-related endpoints.
-
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\routes\userRoutes.js
-// ...existing code...
-```
-
-### `src/routes/medicationRoutes.js`
-
-Defines the routes for medication management-related endpoints.
-
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\routes\medicationRoutes.js
-// ...existing code...
-```
-
-### `src/routes/index.js`
-
-Combines all the routes and registers them with the Express app.
-
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\routes\index.js
-// ...existing code...
-```
-
-### `src/middlewares/authMiddleware.js`
-
-Provides authentication and authorization middlewares to protect routes.
-
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\middlewares\authMiddleware.js
-// ...existing code...
-```
-
-### `src/middlewares/errorHandler.js`
-
-Handles errors and logs them using Winston.
-
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\middlewares\errorHanlder.js
-// ...existing code...
-```
-
-### `src/validations/authValidation.js`
-
-Defines validation schemas for authentication-related data using Joi.
-
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\validations\authValidation.js
-// ...existing code...
-```
-
-### `src/validations/medicationValidation.js`
-
-Defines validation schemas for medication-related data using Joi.
-
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\src\validations\medicationValidation.js
-// ...existing code...
-```
-
-### `.env`
-
-Contains environment variables for the application.
-
-```properties
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\.env
-// ...existing code...
-```
-
-### `.eslintrc.js`
-
-Configuration file for ESLint to enforce coding standards.
-
-```javascript
-// filepath: c:\Users\DELL\OneDrive\Desktop\medication_tracking_app\backend\.eslintrc.js
-// ...existing code...
-```
+- **Config**:
+  - `.env` - Environment variables
+  - `.eslintrc.js` - ESLint configuration
 
 ## Running the Application
 
