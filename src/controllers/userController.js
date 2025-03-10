@@ -124,9 +124,41 @@ const toggleUserStatus = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Get patients
+ * @route GET /api/users/patients
+ * @access Private (Doctor, Admin)
+ */
+const getPatients = asyncHandler(async (req, res) => {
+  const query = { role: ROLES.PATIENT };
+  
+  // Apply search filter if provided
+  if (req.query.search) {
+    query.$or = [
+      { name: { $regex: req.query.search, $options: 'i' } },
+      { email: { $regex: req.query.search, $options: 'i' } }
+    ];
+  }
+
+  // Apply active filter if provided
+  if (req.query.active !== undefined) {
+    query.isActive = req.query.active === 'true';
+  }
+
+  const patients = await User.find(query)
+    .select('_id name email isActive')
+    .sort({ name: 1 });
+
+  res.status(200).json({
+    success: true,
+    patients
+  });
+});
+
 module.exports = {
   getUsers,
   getUserById,
   updateUserRole,
-  toggleUserStatus
+  toggleUserStatus,
+  getPatients
 };

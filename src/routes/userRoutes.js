@@ -4,14 +4,18 @@ const {
   getUsers,
   getUserById,
   updateUserRole,
-  toggleUserStatus
+  toggleUserStatus,
+  getPatients
 } = require('../controllers/userController');
 const { authenticate, authorize } = require('../middlewares/authMiddleware');
 const { ROLES } = require('../models/User');
 
 const router = express.Router();
 
-// All routes require authentication and admin role
+// Get patients (accessible to doctors and admins)
+router.get('/patients', authenticate, authorize([ROLES.DOCTOR, ROLES.ADMIN]), getPatients);
+
+// All other routes require authentication and admin role
 router.use(authenticate);
 router.use(authorize(ROLES.ADMIN));
 

@@ -3,7 +3,8 @@ const Medication = require('../models/Medication');
 const MedicationLog = require('../models/MedicationLog');
 const { ApiError, asyncHandler } = require('../middlewares/errorHanlder');
 const { validateMedication } = require('../validations/medicationValidation');
-const { ROLES } = require('../models/User');
+const { ROLES, User } = require('../models/User');
+const mongoose = require('mongoose');
 
 /**
  * Create a new medication
@@ -16,14 +17,34 @@ const createMedication = asyncHandler(async (req, res) => {
   if (error) {
     throw new ApiError(400, 'Validation error', true, null, error.details);
   }
+
+  // Ensure patient exists
+  const patient = await User.findById(value.patient);
+  if (!patient) {
+    throw new ApiError(404, 'Patient not found');
+  }
+  if (patient.role !== ROLES.PATIENT) {
+    throw new ApiError(400, 'Selected user is not a patient');
+  }
   
   // Create medication
   const medication = new Medication({
     ...value,
+    patient: new mongoose.Types.ObjectId(value.patient),
     prescribedBy: req.user._id
   });
   
+  console.log('Creating medication:', {
+    medicationData: medication,
+    prescribedBy: req.user._id,
+    patientId: value.patient
+  });
+
   await medication.save();
+  
+  // Populate references before sending response
+  await medication.populate('patient', 'name email');
+  await medication.populate('prescribedBy', 'name');
   
   res.status(201).json({
     success: true,
@@ -43,6 +64,10 @@ const getMedications = asyncHandler(async (req, res) => {
   if (req.user.role === ROLES.PATIENT) {
     // Patients can only see their own medications
     query.patient = req.user._id;
+    console.log('Patient medications query:', {
+      patientId: req.user._id,
+      patientRole: req.user.role
+    });
   } else if (req.user.role === ROLES.DOCTOR) {
     // Doctors can see medications they prescribed
     query.prescribedBy = req.user._id;
@@ -53,7 +78,7 @@ const getMedications = asyncHandler(async (req, res) => {
   const { patient, active, startDate, endDate } = req.query;
   
   if (patient && req.user.role !== ROLES.PATIENT) {
-    query.patient = patient;
+    query.patient = mongoose.Types.ObjectId(patient);
   }
   
   if (active !== undefined) {
@@ -67,6 +92,8 @@ const getMedications = asyncHandler(async (req, res) => {
   if (endDate) {
     query.endDate = { $lte: new Date(endDate) };
   }
+
+  console.log('Final query:', query);
   
   // Execute query with pagination
   const page = parseInt(req.query.page) || 1;
@@ -79,6 +106,8 @@ const getMedications = asyncHandler(async (req, res) => {
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit);
+
+  console.log('Found medications:', medications.length);
   
   const total = await Medication.countDocuments(query);
   
@@ -100,7 +129,7 @@ const getMedications = asyncHandler(async (req, res) => {
 const getMedicationById = asyncHandler(async (req, res) => {
   const medication = await Medication.findById(req.params.id)
     .populate('patient', 'name email')
-    .populate('prescribedBy', 'name');
+    .populate('prescribedBy', '_id name');
   
   if (!medication) {
     throw new ApiError(404, 'Medication not found');
@@ -109,14 +138,14 @@ const getMedicationById = asyncHandler(async (req, res) => {
   // Check permission based on role
   if (
     req.user.role === ROLES.PATIENT && 
-    medication.patient.toString() !== req.user._id.toString()
+    medication.patient._id.toString() !== req.user._id.toString()
   ) {
     throw new ApiError(403, 'Not authorized to access this medication');
   }
   
   if (
     req.user.role === ROLES.DOCTOR && 
-    medication.prescribedBy.toString() !== req.user._id.toString()
+    medication.prescribedBy._id.toString() !== req.user._id.toString()
   ) {
     throw new ApiError(403, 'Not authorized to access this medication');
   }
@@ -140,7 +169,9 @@ const updateMedication = asyncHandler(async (req, res) => {
   }
   
   // Find medication
-  let medication = await Medication.findById(req.params.id);
+  let medication = await Medication.findById(req.params.id)
+    .populate('prescribedBy', '_id name')
+    .populate('patient', 'name email');
   
   if (!medication) {
     throw new ApiError(404, 'Medication not found');
@@ -149,7 +180,7 @@ const updateMedication = asyncHandler(async (req, res) => {
   // Check permission for doctors
   if (
     req.user.role === ROLES.DOCTOR && 
-    medication.prescribedBy.toString() !== req.user._id.toString()
+    medication.prescribedBy._id.toString() !== req.user._id.toString()
   ) {
     throw new ApiError(403, 'Not authorized to update this medication');
   }
@@ -159,7 +190,8 @@ const updateMedication = asyncHandler(async (req, res) => {
     req.params.id,
     { $set: value },
     { new: true, runValidators: true }
-  );
+  ).populate('patient', 'name email')
+    .populate('prescribedBy', 'name');
   
   res.status(200).json({
     success: true,
@@ -174,7 +206,9 @@ const updateMedication = asyncHandler(async (req, res) => {
  */
 const deleteMedication = asyncHandler(async (req, res) => {
   // Find medication
-  const medication = await Medication.findById(req.params.id);
+  const medication = await Medication.findById(req.params.id)
+    .populate('prescribedBy', '_id name')
+    .populate('patient', 'name email');
   
   if (!medication) {
     throw new ApiError(404, 'Medication not found');
@@ -183,7 +217,7 @@ const deleteMedication = asyncHandler(async (req, res) => {
   // Check permission for doctors
   if (
     req.user.role === ROLES.DOCTOR && 
-    medication.prescribedBy.toString() !== req.user._id.toString()
+    medication.prescribedBy._id.toString() !== req.user._id.toString()
   ) {
     throw new ApiError(403, 'Not authorized to delete this medication');
   }
